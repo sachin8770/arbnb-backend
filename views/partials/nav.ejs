@@ -1,0 +1,85 @@
+<header class="bg-red-500 text-white p-4 shadow-md">
+  <%- include('../partials/head') %>
+</header>
+
+<div class="fixed top-0 left-0 right-0 z-50 bg-white border-8 border-orange-500 shadow-xl">
+  <nav class="w-full py-5 px-10">
+  
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      
+      <!-- Logo -->
+      <h1 class="text-3xl font-bold text-orange-600">
+        Airbnb
+      </h1>
+
+      <!-- Menu -->
+      <ul class="flex items-center gap-6">
+         <% if(!isLogined){ %>
+        <li>
+          <a href="/auth/signup" class="inline-block bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition font-semibold shadow-md hover:shadow-lg">
+            Signup
+          </a>
+        </li>
+
+        <li>
+          <a href="/auth/login" class="inline-block bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition font-semibold shadow-md hover:shadow-lg">
+            Login
+          </a>
+        </li>
+       <%}%>
+
+        <li>
+          <a href="/arbnbhomes" class="inline-block bg-gradient-to-r from-red-500 to-orange-500 text-white px-6 py-2 rounded-lg hover:shadow-lg transition font-semibold">
+            airbnb Homes
+          </a>
+        </li>
+
+        <% if(isLogined){ %>
+         <% if(user && user.role=='user'){ %>
+          <li>
+          <a href="/gethomes" class="inline-block bg-purple-500 text-white px-5 py-2 rounded-lg hover:bg-purple-600 transition text-sm font-semibold">
+            Home List
+          </a>
+        </li>
+
+        <li>
+          <a href="/favourites" class="inline-block bg-pink-500 text-white px-5 py-2 rounded-lg hover:bg-pink-600 transition text-sm font-semibold">
+            Favourite List
+          </a>
+        </li>
+
+        <li>
+          <a href="/reserved" class="inline-block bg-green-500 text-white px-5 py-2 rounded-lg hover:bg-green-600 transition text-sm font-semibold">
+            Reserve
+          </a>
+        </li>
+
+        <li>
+          <a href="/store/bookings" class="inline-block bg-indigo-500 text-white px-5 py-2 rounded-lg hover:bg-indigo-600 transition text-sm font-semibold">
+            Bookings
+          </a>
+        </li>
+         <% } else{ %>
+          <li>
+          <a href="/host/home-list" class="inline-block bg-yellow-600 text-white px-5 py-2 rounded-lg hover:bg-yellow-700 transition text-sm font-semibold">
+            Host Home List
+          </a>
+        </li>
+        <li>
+          <a href="/host/add-home" class="inline-block bg-yellow-600 text-white px-5 py-2 rounded-lg hover:bg-yellow-700 transition text-sm font-semibold">
+            add home +
+          </a>
+        </li>
+        <%  } %>
+        <li>
+          <a href="/auth/logout" class="inline-block bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition font-semibold shadow-md hover:shadow-lg">
+            logout
+          </a>
+        </li>
+        <%}%>
+      </ul>
+
+    </div>
+
+  </nav>
+</div>
