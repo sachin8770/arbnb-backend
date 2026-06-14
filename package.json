@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "tailwind": "tailwindcss -i ./views/input.css -o ./public/output.css --watch",
-    "start": "nodemon --exec tsx app.js & npm run tailwind"
+    "build": "tailwindcss -i ./views/input.css -o ./public/output.css",
+    "start": "tsx app.js",
+    "dev": "nodemon --exec tsx app.js & npm run tailwind"
   },
   "keywords": [],
   "author": "",
@@ -25,12 +27,11 @@
     "nodemon": "^3.1.14",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.13",
-    "tsx": "^4.22.4",
     "typescript": "^6.0.3"
   },
   "dependencies": {
-    "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
+    "tsx": "^4.22.4",
     "body-parser": "^1.20.3",
     "cloudinary": "^2.10.0",
     "connect-mongo": "^6.0.0",

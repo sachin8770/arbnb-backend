@@ -402,10 +402,14 @@ const searchHomes = async (req, res) => {
   }
 };
 
-// const razorpay = new Razorpay({
-//   key_id: process.env.RAZORPAY_KEY_ID,
-//   key_secret: process.env.RAZORPAY_KEY_SECRET,
-// });
+const getRazorpayInstance = () => {
+  const key_id = process.env.RAZORPAY_KEY_ID;
+  const key_secret = process.env.RAZORPAY_KEY_SECRET;
+  if (!key_id || !key_secret) {
+    throw new ApiError(500, "Razorpay keys (RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET) are missing from environment configuration");
+  }
+  return new Razorpay({ key_id, key_secret });
+};
 
  const createOrder = async (req, res) => {
   try {
@@ -417,6 +421,7 @@ const searchHomes = async (req, res) => {
       throw new ApiError(404, "Home not found");
     }
 
+    const razorpay = getRazorpayInstance();
     const order = await razorpay.orders.create({
       amount: home.price * 100,
       currency: "INR",

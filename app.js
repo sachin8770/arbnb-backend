@@ -71,9 +71,9 @@ app.use((err, req, res, next) => {
 
     console.log("Connected to Mongo");
 
-    const PORT = process.env.PORT;
+    const PORT = process.env.PORT || 3000;
     
-    console.log(PORT);
+    console.log(`Starting server on port ${PORT}...`);
 
     app.listen(PORT, () => {
       console.log(`Server running on address http://localhost:${PORT}`);
