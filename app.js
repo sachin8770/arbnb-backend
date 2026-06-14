@@ -11,8 +11,8 @@ import * as controller from "./controllers/errorcontroller.js";
 import storeRouter from "./routes/storeRouter.js";
 import { hostRouter } from "./routes/hostRouter.js";
 import { authrouter } from "./routes/auth.js";
-import rootDir from "./utils/pathUtil.js";
 
+const rootDir = process.cwd();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
