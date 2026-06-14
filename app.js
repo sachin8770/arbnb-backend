@@ -25,15 +25,23 @@ const app = express();
 
 
 
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(",").map(o => o.trim())
+  : [
+      "http://localhost:5173",
+      "https://deplotfrontarbnb-nm9y.vercel.app",
+      "https://arbnb-frontend-dx3hye958-sachinpatel-s-projects.vercel.app"
+    ];
+
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://deplotfrontarbnb-nm9y.vercel.app",
-
-    "https://arbnb-frontend-dx3hye958-sachinpatel-s-projects.vercel.app"
-
-
-  ],
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes("*")) {
+      return callback(null, true);
+    } else {
+      return callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 

@@ -68,6 +68,7 @@ const postlogin = async (req, res) => {
     const options = {
       httpOnly: true,
       secure: true,
+      sameSite: "none",
     };
     console.log(accessToken, refreshToken);
     console.log(loggedInUser);
@@ -183,6 +184,7 @@ const logoutUser = asyncHandler(async (req, res) => {
   const options = {
     httpOnly: true,
     secure: true,
+    sameSite: "none",
   };
   console.log("userloghgedoit successfully");
   return res
