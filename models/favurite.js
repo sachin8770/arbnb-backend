@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const favouriteSchema = new mongoose.Schema({
 
@@ -11,4 +11,5 @@ const favouriteSchema = new mongoose.Schema({
 });
 
 
-module.exports = mongoose.model('Favourite', favouriteSchema);
+const Favourite = mongoose.model('Favourite', favouriteSchema);
+export default Favourite;

@@ -1,4 +1,8 @@
 import Home from "../models/home.js";
+import crypto from "crypto";
+
+import Razorpay from "razorpay";
+
 
 import {User} from "../models/user.js";
 import fs from 'fs';
@@ -6,7 +10,7 @@ import { asyncHandler } from "../utils/handeltrycatch.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
-
+import  Booking  from "../models/bookings.js" 
 import { v2 as cloudinary } from "cloudinary";
 const getaddhome = (req, res, next) => {
 
@@ -76,14 +80,15 @@ const addFavouriteController = async (req, res) => {
 
 
 const postaddhome = asyncHandler(async (req, res, next) => {
+  console.log(req.user._id);
 
-  const { name, price, location, rating } = req.body;
+ 
+  const { name, description, price, location } = req.body;
 
 
-  if (!name || !price || !location || !rating) {
+  if (!name || !description || !price || !location) {
     throw new ApiError(400, "Fields can not be empty");
   }
-
 
   if (!req.file) {
     throw new ApiError(400, "Please upload a valid image");
@@ -91,9 +96,7 @@ const postaddhome = asyncHandler(async (req, res, next) => {
 
   console.log("Multer file received:", req.file);
 
-
   const cloudinaryResponse = await uploadOnCloudinary(req.file.path);
-
 
   if (!cloudinaryResponse || !cloudinaryResponse.secure_url) {
     throw new ApiError(500, "Image upload to Cloudinary failed");
@@ -101,14 +104,23 @@ const postaddhome = asyncHandler(async (req, res, next) => {
 
   console.log("Cloudinary image URL:", cloudinaryResponse.secure_url);
 
-
   const home = new Home({
-    owner:req.user_id,
+    owner: req.user._id,
     name,
+
+    // ADDED
+    description,
+
     price,
     location,
-    rating,
+
+    // REMOVED
+    // rating,
+
     photo: cloudinaryResponse.secure_url,
+
+    // OPTIONAL: not required because schema default handles it
+    // isAvailable: true,
   });
 
   console.log("before save");
@@ -117,15 +129,13 @@ const postaddhome = asyncHandler(async (req, res, next) => {
 
   console.log("after save");
 
-  return res
-    .status(201)
-    .json(
-      new ApiResponse(
-        201,
-        savedHome,
-        "Home added successfully"
-      )
-    );
+  return res.status(201).json(
+    new ApiResponse(
+      201,
+      savedHome,
+      "Home added successfully"
+    )
+  );
 });
 const HostHomeList = async (req, res, next) => {
   try {
@@ -254,22 +264,262 @@ export const getHomeByIdController = asyncHandler(
     );
   }
 );
+const getMyBookings = async (req, res) => {
+  try {
+    if (!req.user) {
+      throw new ApiError(
+        400,
+        "Please login first"
+      );
+    }
 
+    const bookings = await Booking.find({
+      guest: req.user._id, 
+    }).populate("home");
 
-const addbookings = (req, res, next) => {
-  const homeId = req.params.homeid;
-  console.log("reached here");
-  res.render('store/bookings', { isLogined: req.isLogined, user: req.session.user, homeId: homeId });
+    res.status(200).json(bookings);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
 };
 
+
+const addbookings = async (req, res) => {
+  try {
+    const { homeid } = req.params;
+
+    if (!homeid) {
+      throw new ApiError(400, "Home id is required");
+    }
+
+   
+    const home = await Home.findById(homeid);
+ 
+    if (!home) {
+      throw new ApiError(404, "Home not found");
+    }
+    //  const order = await razorpay.orders.create({
+    //    amount: home.price * 100,
+    //    currency: "INR",
+    //  });
+    const alradybooked = await Booking.findOne({
+      guest: req.user._id,
+      home: homeid,
+    });
+
+    if (alradybooked) {
+      return res.status(200).json(
+        new ApiResponse(
+          200,
+          alradybooked,
+          "Home already booked by you"
+        )
+      );
+    }
+
+    const booking = await Booking.create({
+      guest: req.user._id,
+      home: homeid,
+
+    
+      owner: home.owner,
+      amount: home.price,
+
+    
+      bookingStatus: "confirmed",
+      paymentStatus: "pending",
+    });
+
+    return res.status(201).json(
+      new ApiResponse(
+        201,
+        booking,
+        "Booking added successfully"
+      )
+    );
+  } catch (error) {
+    console.log(error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+const getMyHomes = async (req, res) => {
+  try {
+    console.log(req.user._id);
+    const homes = await Home.find({
+      owner: req.user._id,
+    });
+
+    if (!homes) {
+      throw new ApiError(404, "No homes found");
+    }
+
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        homes,
+        "Homes fetched successfully"
+      )
+    );
+  } catch (error) {
+    console.log(error);
+
+    return res.status(
+      error.statusCode || 500
+    ).json(
+      new ApiResponse(
+        error.statusCode || 500,
+        null,
+        error.message || "Something went wrong"
+      )
+    );
+  }
+};
+const searchHomes = async (req, res) => {
+  try {
+    const { query } = req.query;
+
+    const homes = await Home.find({
+      $or: [
+        { name: { $regex: query, $options: "i" } },
+        { location: { $regex: query, $options: "i" } },
+        { description: { $regex: query, $options: "i" } },
+      ],
+    });
+
+    return res.status(200).json(
+      new ApiResponse(200, homes, "Homes fetched successfully")
+    );
+  } catch (error) {
+    return res.status(500).json(
+      new ApiResponse(500, null, error.message)
+    );
+  }
+};
+
+// const razorpay = new Razorpay({
+//   key_id: process.env.RAZORPAY_KEY_ID,
+//   key_secret: process.env.RAZORPAY_KEY_SECRET,
+// });
+
+ const createOrder = async (req, res) => {
+  try {
+    const { homeid } = req.params;
+
+    const home = await Home.findById(homeid);
+
+    if (!home) {
+      throw new ApiError(404, "Home not found");
+    }
+
+    const order = await razorpay.orders.create({
+      amount: home.price * 100,
+      currency: "INR",
+    });
+
+    return res.status(200).json({
+      success: true,
+      order,
+      homeId: home._id,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+ const verifyPayment = async (req, res) => {
+  try {
+    const {
+      homeId,
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+    } = req.body;
+
+    const generatedSignature = crypto
+      .createHmac(
+        "sha256",
+        process.env.RAZORPAY_KEY_SECRET
+      )
+      .update(
+        razorpay_order_id +
+          "|" +
+          razorpay_payment_id
+      )
+      .digest("hex");
+
+    if (
+      generatedSignature !==
+      razorpay_signature
+    ) {
+      throw new ApiError(
+        400,
+        "Payment verification failed"
+      );
+    }
+
+    const home = await Home.findById(homeId);
+
+    if (!home) {
+      throw new ApiError(404, "Home not found");
+    }
+
+    const alreadyBooked =
+      await Booking.findOne({
+        guest: req.user._id,
+        home: homeId,
+      });
+
+    if (alreadyBooked) {
+      return res.status(200).json({
+        success: true,
+        booking: alreadyBooked,
+      });
+    }
+
+    const booking = await Booking.create({
+      guest: req.user._id,
+      home: homeId,
+      owner: home.owner,
+      amount: home.price,
+      bookingStatus: "confirmed",
+      paymentStatus: "paid",
+    });
+
+    return res.status(201).json({
+      success: true,
+      booking,
+      message: "Booking successful",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 export {
   postaddhome,
+  getMyBookings,
   getaddhome,
   HostHomeList,
   addFavouriteController,
   Edithome,
   editposthome,
+  getMyHomes,
   postdeleathome,
   removeFavouriteController,
   addbookings,
+  searchHomes,
+  createOrder,
+  verifyPayment
 };

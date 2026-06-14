@@ -1,18 +1,18 @@
 
-const upload=require("../middleware/multerUtil");
-const express = require('express');
+import upload from "../middleware/multerUtil.js";
+import express from 'express';
 const storeRouter = express.Router();
-const storecontroller=require("../controllers/storecontroller");
-const { verifyJWT } = require("../middleware/auth");
+import * as storecontroller from "../controllers/storecontroller.js";
+import { verifyJWT } from "../middleware/auth.js";
+import { optionalJWT } from "../middleware/optionalauth.js";
 
-storeRouter.get("/gethomes",storecontroller.gethomes);
+storeRouter.get("/gethomes",optionalJWT,storecontroller.gethomes);
 storeRouter.get("/getHosthomes",storecontroller.gethomeshost);
 storeRouter.get("/store/bookings",storecontroller.getbookings);
 storeRouter.get("/favourites",verifyJWT,storecontroller.getFavouritesController);
 storeRouter.get("/reserved",storecontroller.reservd);
 storeRouter.get("/home/:homeid",storecontroller.getEditHome);
-// storeRouter.post("/:homeid", storecontroller.posteditredirect);
 storeRouter.get("/rules/:homeId", storecontroller.getHouseRules);
 storeRouter.get("/arbnbhomes",storecontroller.getarbnbhomes);
 
-module.exports = storeRouter;
+export default storeRouter;

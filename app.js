@@ -1,29 +1,37 @@
-const path = require("path");
-const express = require("express");
-const session = require("express-session");
-const mongoose = require("mongoose");
-const MongoStore = require("connect-mongo").default;
-const cors = require("cors");
-const cookieParser = require("cookie-parser");
-const controller = require("./controllers/errorcontroller");
-const storeRouter = require("./routes/storeRouter");
-const { hostRouter } = require("./routes/hostRouter");
-const { authrouter } = require("./routes/auth");
-const rootDir = require("./utils/pathUtil");
+import path from "path";
+import { fileURLToPath } from "url";
+import express from "express";
+import session from "express-session";
+import dotenv from "dotenv";
+import mongoose from "mongoose";
+import MongoStore from "connect-mongo";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import * as controller from "./controllers/errorcontroller.js";
+import storeRouter from "./routes/storeRouter.js";
+import { hostRouter } from "./routes/hostRouter.js";
+import { authrouter } from "./routes/auth.js";
+import rootDir from "./utils/pathUtil.js";
 
-const DB_PATH =
-  "mongodb+srv://root:sachin123@completecoding.phc1b3b.mongodb.net/airbnb?appName=completecoding";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config();
+
 
 const app = express();
-const PORT = 3000;
 
-// CORS setup
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-  })
-);
+
+
+
+
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "https://deplotfrontarbnb-nm9y.vercel.app"
+  ],
+  credentials: true
+}));
 
 // Body parser
 app.use(express.urlencoded({ extended: true }));
@@ -57,8 +65,15 @@ app.use((err, req, res, next) => {
 
 (async () => {
   try {
-    await mongoose.connect(DB_PATH);
+    console.log("DB_PATH:", process.env.DB_PATH);
+
+    await mongoose.connect(process.env.DB_PATH);
+
     console.log("Connected to Mongo");
+
+    const PORT = process.env.PORT;
+    
+    console.log(PORT);
 
     app.listen(PORT, () => {
       console.log(`Server running on address http://localhost:${PORT}`);

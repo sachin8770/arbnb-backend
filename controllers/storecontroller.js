@@ -4,29 +4,36 @@ import path from 'path';
 import rootDir from '../utils/pathUtil.js';
 import { User } from '../models/user.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
+import { ApiError } from '../utils/ApiError.js';
 
 const gethomes = async (req, res, next) => {
   try {
+    console.log("from here",req.user);
     const homes = await Home.find();
-
+ const user=req.user;   
+console.log("User:", user);
+console.log("Favourites:", user?.favourites);
     let favouriteSet = new Set();
-     console.log(req.user);
-    // ONLY if user is logged in
-    if (req.user) {
-      const user = await User.findById(req.user._id).select("favourites");
 
-      favouriteSet = new Set(
-        user.favourites.map((id) => id.toString())
-      );
+    if (req.user) {
+      const user = await User.findById(
+        req.user._id
+      ).select("favourites");
+
+      if (user) {
+        favouriteSet = new Set(
+          user.favourites.map((id) => id.toString())
+        );
+      }
     }
 
-    const homesWithFav = homes.map((home) => {
-      return {
-        ...home.toObject(),
-        isFavourite: favouriteSet.has(home._id.toString()),
-      };
-    });
-
+    const homesWithFav = homes.map((home) => ({
+      ...home.toObject(),
+      isFavourite: favouriteSet.has(
+        home._id.toString()
+      ),
+    }));
+   
     return res.status(200).json(homesWithFav);
   } catch (error) {
     next(error);
@@ -38,6 +45,12 @@ const getbookings = async (req, res, next) => {
 };
 const getFavouritesController = async (req, res) => {
   try {
+    if (!req.user) {
+      return res.status(401).json(
+        new ApiResponse(401, null, "Please login")
+      );
+    }
+
     const userId = req.user._id;
 
     const favourites = await User.aggregate([
@@ -48,7 +61,7 @@ const getFavouritesController = async (req, res) => {
       },
       {
         $lookup: {
-          from: "homes", // collection name
+          from: "homes",
           localField: "favourites",
           foreignField: "_id",
           as: "favouriteHomes",
@@ -72,9 +85,9 @@ const getFavouritesController = async (req, res) => {
   } catch (err) {
     console.log(err);
 
-    return res.status(err.statusCode || 500).json(
+    return res.status(500).json(
       new ApiResponse(
-        err.statusCode || 500,
+        500,
         null,
         err.message || "Error fetching favourites"
       )

@@ -1,6 +1,6 @@
-const cloudinary = require("cloudinary").v2;
-const fs = require("fs");
-const dotenv = require("dotenv");
+import { v2 as cloudinary } from "cloudinary";
+import fs from "fs";
+import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -10,7 +10,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const uploadOnCloudinary = async (localFilePath) => {
+const uploadOnCloudinary = async (localFilePath: string) => {
   try {
     if (!localFilePath) return null;
 
@@ -25,7 +25,7 @@ const uploadOnCloudinary = async (localFilePath) => {
     }
 
     return response;
-  } catch (error) {
+  } catch (error: any) {
     console.log("Cloudinary upload error:", error.message);
 
     if (fs.existsSync(localFilePath)) {
@@ -36,4 +36,4 @@ const uploadOnCloudinary = async (localFilePath) => {
   }
 };
 
-module.exports = { uploadOnCloudinary };
+export { uploadOnCloudinary };

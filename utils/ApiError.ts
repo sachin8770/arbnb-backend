@@ -1,9 +1,14 @@
 class ApiError extends Error {
+  statusCode: number;
+  data: null;
+  success: boolean;
+  errors: string[];
+
   constructor(
-    statusCode,
-    message = "Something went wrong",
-    errors = [],
-    stack = ""
+    statusCode: number,
+    message: string = "Something went wrong",
+    errors: string[] = [],
+    stack: string = ""
   ) {
     super(message);
 
@@ -21,4 +26,4 @@ class ApiError extends Error {
   }
 }
 
-module.exports = { ApiError };
+export { ApiError };
