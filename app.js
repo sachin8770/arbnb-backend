@@ -28,7 +28,11 @@ const app = express();
 app.use(cors({
   origin: [
     "http://localhost:5173",
-    "https://deplotfrontarbnb-nm9y.vercel.app"
+    "https://deplotfrontarbnb-nm9y.vercel.app",
+
+    "https://arbnb-frontend-dx3hye958-sachinpatel-s-projects.vercel.app"
+
+
   ],
   credentials: true
 }));
@@ -72,7 +76,7 @@ app.use((err, req, res, next) => {
     console.log("Connected to Mongo");
 
     const PORT = process.env.PORT || 3000;
-    
+
     console.log(`Starting server on port ${PORT}...`);
 
     app.listen(PORT, () => {
