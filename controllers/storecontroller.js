@@ -1,15 +1,17 @@
 import Home from '../models/home.js';
 import fs from 'fs';
 import path from 'path';
-import rootDir from '../utils/pathUtil.js';
+
 import { User } from '../models/user.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { ApiError } from '../utils/ApiError.js';
-
+const rootDir = process.cwd();
 const gethomes = async (req, res, next) => {
+  
   try {
     console.log("from here",req.user);
     const homes = await Home.find();
+    
  const user=req.user;   
 console.log("User:", user);
 console.log("Favourites:", user?.favourites);
